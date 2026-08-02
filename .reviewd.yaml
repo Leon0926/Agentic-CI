@@ -1,0 +1,5 @@
+model: claude-sonnet-4-6
+max_iterations: 8
+confidence_threshold: 0.5
+detectors:
+  - secrets
