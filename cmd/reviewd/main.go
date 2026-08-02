@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Agentic-CI/agentic-ci/cmd/reviewd/commands"
+	"github.com/Leon0926/Agentic-CI/cmd/reviewd/commands"
 )
 
 func main() {
