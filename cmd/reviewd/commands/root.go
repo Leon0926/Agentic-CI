@@ -6,9 +6,11 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "reviewd",
-	Short: "reviewd is a AI code review tool for detecting defects and generating reports",
-	Long:  "reviewd runs detector llm agents that can read files, grep the repo and later run tests in disposable work tree",
+	Use:           "reviewd",
+	Short:         "reviewd is a AI code review tool for detecting defects and generating reports",
+	Long:          "reviewd runs detector llm agents that can read files, grep the repo and later run tests in disposable work tree",
+	SilenceUsage:  true,
+	SilenceErrors: true,
 }
 
 func Execute() error {
