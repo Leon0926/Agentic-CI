@@ -26,9 +26,9 @@ func init() {
 	pf.Int("max-iterations", 8, "max tool-call iterations per detector agent")
 	pf.Float64("confidence-threshold", 0.5, "drop findings below this confidence")
 
-	_ = viper.BindPFlag("config", pf.Lookup("config"))
 	_ = viper.BindPFlag("model", pf.Lookup("model"))
 	_ = viper.BindPFlag("max-iterations", pf.Lookup("max-iterations"))
+	_ = viper.BindPFlag("confidence-threshold", pf.Lookup("confidence-threshold"))
 }
 
 func initConfig() {
