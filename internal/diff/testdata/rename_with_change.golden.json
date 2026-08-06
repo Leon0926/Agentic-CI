@@ -1,0 +1,102 @@
+[
+  {
+    "OldPath": "helper.go",
+    "NewPath": "helper.go",
+    "IsNew": false,
+    "IsDelete": true,
+    "IsRename": false,
+    "Hunks": [
+      {
+        "OldStart": 1,
+        "OldCount": 5,
+        "NewStart": 0,
+        "NewCount": 0,
+        "Lines": [
+          {
+            "Op": "delete",
+            "Content": "package main",
+            "OldLine": 1,
+            "NewLine": 0
+          },
+          {
+            "Op": "delete",
+            "Content": "",
+            "OldLine": 2,
+            "NewLine": 0
+          },
+          {
+            "Op": "delete",
+            "Content": "func helper() int {",
+            "OldLine": 3,
+            "NewLine": 0
+          },
+          {
+            "Op": "delete",
+            "Content": "\treturn 43",
+            "OldLine": 4,
+            "NewLine": 0
+          },
+          {
+            "Op": "delete",
+            "Content": "}",
+            "OldLine": 5,
+            "NewLine": 0
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "OldPath": "helpers.go",
+    "NewPath": "helpers.go",
+    "IsNew": false,
+    "IsDelete": false,
+    "IsRename": false,
+    "Hunks": [
+      {
+        "OldStart": 1,
+        "OldCount": 5,
+        "NewStart": 1,
+        "NewCount": 5,
+        "Lines": [
+          {
+            "Op": "context",
+            "Content": "package main",
+            "OldLine": 1,
+            "NewLine": 1
+          },
+          {
+            "Op": "context",
+            "Content": "",
+            "OldLine": 2,
+            "NewLine": 2
+          },
+          {
+            "Op": "context",
+            "Content": "func helper() int {",
+            "OldLine": 3,
+            "NewLine": 3
+          },
+          {
+            "Op": "delete",
+            "Content": "\treturn 43",
+            "OldLine": 4,
+            "NewLine": 0
+          },
+          {
+            "Op": "add",
+            "Content": "\treturn 44",
+            "OldLine": 0,
+            "NewLine": 4
+          },
+          {
+            "Op": "context",
+            "Content": "}",
+            "OldLine": 5,
+            "NewLine": 5
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,111 @@
+[
+  {
+    "OldPath": "server.go",
+    "NewPath": "server.go",
+    "IsNew": false,
+    "IsDelete": false,
+    "IsRename": false,
+    "Hunks": [
+      {
+        "OldStart": 3,
+        "OldCount": 7,
+        "NewStart": 3,
+        "NewCount": 7,
+        "Lines": [
+          {
+            "Op": "context",
+            "Content": "import \"fmt\"",
+            "OldLine": 3,
+            "NewLine": 3
+          },
+          {
+            "Op": "context",
+            "Content": "",
+            "OldLine": 4,
+            "NewLine": 4
+          },
+          {
+            "Op": "context",
+            "Content": "func main() {",
+            "OldLine": 5,
+            "NewLine": 5
+          },
+          {
+            "Op": "delete",
+            "Content": "\tfmt.Println(\"booting\")",
+            "OldLine": 6,
+            "NewLine": 0
+          },
+          {
+            "Op": "add",
+            "Content": "\tfmt.Println(\"igniting\")",
+            "OldLine": 0,
+            "NewLine": 6
+          },
+          {
+            "Op": "context",
+            "Content": "\tsetup()",
+            "OldLine": 7,
+            "NewLine": 7
+          },
+          {
+            "Op": "context",
+            "Content": "\trun()",
+            "OldLine": 8,
+            "NewLine": 8
+          },
+          {
+            "Op": "context",
+            "Content": "\tfmt.Println(\"done\")",
+            "OldLine": 9,
+            "NewLine": 9
+          }
+        ]
+      },
+      {
+        "OldStart": 14,
+        "OldCount": 5,
+        "NewStart": 14,
+        "NewCount": 5,
+        "Lines": [
+          {
+            "Op": "context",
+            "Content": "}",
+            "OldLine": 14,
+            "NewLine": 14
+          },
+          {
+            "Op": "context",
+            "Content": "",
+            "OldLine": 15,
+            "NewLine": 15
+          },
+          {
+            "Op": "context",
+            "Content": "func run() {",
+            "OldLine": 16,
+            "NewLine": 16
+          },
+          {
+            "Op": "delete",
+            "Content": "\tfmt.Println(\"run\")",
+            "OldLine": 17,
+            "NewLine": 0
+          },
+          {
+            "Op": "add",
+            "Content": "\tfmt.Println(\"running now\")",
+            "OldLine": 0,
+            "NewLine": 17
+          },
+          {
+            "Op": "context",
+            "Content": "}",
+            "OldLine": 18,
+            "NewLine": 18
+          }
+        ]
+      }
+    ]
+  }
+]

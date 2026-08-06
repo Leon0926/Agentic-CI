@@ -1,0 +1,49 @@
+[
+  {
+    "OldPath": "",
+    "NewPath": "util.go",
+    "IsNew": true,
+    "IsDelete": false,
+    "IsRename": false,
+    "Hunks": [
+      {
+        "OldStart": 0,
+        "OldCount": 0,
+        "NewStart": 1,
+        "NewCount": 5,
+        "Lines": [
+          {
+            "Op": "add",
+            "Content": "package main",
+            "OldLine": 0,
+            "NewLine": 1
+          },
+          {
+            "Op": "add",
+            "Content": "",
+            "OldLine": 0,
+            "NewLine": 2
+          },
+          {
+            "Op": "add",
+            "Content": "func helper() int {",
+            "OldLine": 0,
+            "NewLine": 3
+          },
+          {
+            "Op": "add",
+            "Content": "\treturn 42",
+            "OldLine": 0,
+            "NewLine": 4
+          },
+          {
+            "Op": "add",
+            "Content": "}",
+            "OldLine": 0,
+            "NewLine": 5
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,20 @@
+diff --git a/server.go b/server.go
+index e980a80..047a675 100644
+--- a/server.go
++++ b/server.go
+@@ -3,7 +3,7 @@ package main
+ import "fmt"
+ 
+ func main() {
+-	fmt.Println("booting")
++	fmt.Println("igniting")
+ 	setup()
+ 	run()
+ 	fmt.Println("done")
+@@ -14,5 +14,5 @@ func setup() {
+ }
+ 
+ func run() {
+-	fmt.Println("run")
++	fmt.Println("running now")
+ }

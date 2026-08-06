@@ -1,0 +1,67 @@
+[
+  {
+    "OldPath": "server.go",
+    "NewPath": "server.go",
+    "IsNew": false,
+    "IsDelete": false,
+    "IsRename": false,
+    "Hunks": [
+      {
+        "OldStart": 3,
+        "OldCount": 7,
+        "NewStart": 3,
+        "NewCount": 7,
+        "Lines": [
+          {
+            "Op": "context",
+            "Content": "import \"fmt\"",
+            "OldLine": 3,
+            "NewLine": 3
+          },
+          {
+            "Op": "context",
+            "Content": "",
+            "OldLine": 4,
+            "NewLine": 4
+          },
+          {
+            "Op": "context",
+            "Content": "func main() {",
+            "OldLine": 5,
+            "NewLine": 5
+          },
+          {
+            "Op": "delete",
+            "Content": "\tfmt.Println(\"starting\")",
+            "OldLine": 6,
+            "NewLine": 0
+          },
+          {
+            "Op": "add",
+            "Content": "\tfmt.Println(\"booting\")",
+            "OldLine": 0,
+            "NewLine": 6
+          },
+          {
+            "Op": "context",
+            "Content": "\tsetup()",
+            "OldLine": 7,
+            "NewLine": 7
+          },
+          {
+            "Op": "context",
+            "Content": "\trun()",
+            "OldLine": 8,
+            "NewLine": 8
+          },
+          {
+            "Op": "context",
+            "Content": "\tfmt.Println(\"done\")",
+            "OldLine": 9,
+            "NewLine": 9
+          }
+        ]
+      }
+    ]
+  }
+]

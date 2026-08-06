@@ -1,0 +1,22 @@
+diff --git a/helper.go b/helper.go
+deleted file mode 100644
+index 87f78a2..0000000
+--- a/helper.go
++++ /dev/null
+@@ -1,5 +0,0 @@
+-package main
+-
+-func helper() int {
+-	return 43
+-}
+diff --git a/helpers.go b/helpers.go
+index 87f78a2..35d9c89 100644
+--- a/helpers.go
++++ b/helpers.go
+@@ -1,5 +1,5 @@
+ package main
+ 
+ func helper() int {
+-	return 43
++	return 44
+ }
