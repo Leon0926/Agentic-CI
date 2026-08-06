@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/Leon0926/Agentic-CI/internal/diff"
 	"github.com/Leon0926/Agentic-CI/internal/findings"
 	"github.com/spf13/cobra"
 )
@@ -26,10 +27,14 @@ Diff sources, in priority order:
 		if err != nil {
 			return err
 		}
-		if strings.TrimSpace(raw) == "" {
-			return fmt.Errorf("no diff provided: use --diff <range> or pipe a diff to stdin")
+
+		// parse raw into hunks -> internal/diff -> DONE!!!
+		files, err := diff.Parse(strings.NewReader(raw))
+		if err != nil {
+			return fmt.Errorf("parsing diff: %w", err)
 		}
-		// parse raw into hunks -> internal/diff
+
+		_ = files //user by detectors later
 		// create disposable worktree -> internal/sandbox
 		// run secrets detector loop  -> internal/detectors/secrets
 
