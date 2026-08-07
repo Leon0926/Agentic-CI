@@ -2,6 +2,7 @@ package commands
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -14,6 +15,8 @@ import (
 	"github.com/Leon0926/Agentic-CI/internal/findings"
 	"github.com/spf13/cobra"
 )
+
+var errNoDiffSource = errors.New("no diff provided: pass --diff <range> or pipe a diff on stdin")
 
 var runCmd = &cobra.Command{
 	Use:   "run",
@@ -90,7 +93,7 @@ func readDiff(cmd *cobra.Command) (string, error) {
 		}
 		return string(b), nil
 	}
-	// no diff provided, return empty string and no error
-	return "", nil
+	// no diff provided, return no diff error
+	return "", errNoDiffSource
 
 }
