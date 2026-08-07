@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/Leon0926/Agentic-CI/internal/detectors"
+	"github.com/Leon0926/Agentic-CI/internal/detectors/secrets"
 	"github.com/Leon0926/Agentic-CI/internal/diff"
 	"github.com/Leon0926/Agentic-CI/internal/findings"
 	"github.com/spf13/cobra"
@@ -34,10 +36,24 @@ Diff sources, in priority order:
 			return fmt.Errorf("parsing diff: %w", err)
 		}
 
-		_ = files //user by detectors later
-		// create disposable worktree -> internal/sandbox
-		// run secrets detector loop  -> internal/detectors/secrets
+		// run secrets detector loop  -> internal/detectors/secrets -> DONE!!!
 
+		dets := []detectors.Detector{
+			secrets.New(),
+		}
+
+		report := findings.Report{Findings: []findings.Finding{}}
+		ctx := cmd.Context() // cobra threads a context through; use it now so step 4 is free
+
+		for _, det := range dets {
+			found, err := det.Detect(ctx, files)
+			if err != nil {
+				return fmt.Errorf("detector %s: %w", det.Name(), err)
+			}
+			report.Findings = append(report.Findings, found...)
+		}
+
+		// create disposable worktree -> internal/sandbox
 		// do this later
 		// run other detectors         -> internal/detectors/...
 		// collect findings            -> internal/findings
