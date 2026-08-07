@@ -57,11 +57,10 @@ Diff sources, in priority order:
 		// do this later
 		// run other detectors         -> internal/detectors/...
 		// collect findings            -> internal/findings
-		results := []findings.Finding{}
 
 		enc := json.NewEncoder(os.Stdout)
 		enc.SetIndent("", "  ")
-		return enc.Encode(findings.Report{Findings: results})
+		return enc.Encode(report)
 	},
 }
 
