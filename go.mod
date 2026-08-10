@@ -3,6 +3,7 @@ module github.com/Leon0926/Agentic-CI
 go 1.26.5
 
 require (
+	github.com/anthropics/anthropic-sdk-go v1.62.0
 	github.com/bluekeyes/go-gitdiff v0.9.0
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
@@ -10,7 +11,6 @@ require (
 )
 
 require (
-	github.com/anthropics/anthropic-sdk-go v1.62.0 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/buger/jsonparser v1.1.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
