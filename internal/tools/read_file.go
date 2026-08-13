@@ -81,5 +81,10 @@ func (t *ReadFile) resolve(p string) (string, error) {
 }
 
 func numberLines(s string) string {
-	// split, prefix "%d\t", join
+	lines := strings.Split(s, "\n")
+	var b strings.Builder
+	for i, line := range lines {
+		fmt.Fprintf(&b, "%d\t%s\n", i+1, line)
+	}
+	return strings.TrimSuffix(b.String(), "\n")
 }
