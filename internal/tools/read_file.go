@@ -13,10 +13,15 @@ import (
 
 const maxReadBytes = 64 * 1024
 
+// ReadFile is the "read_file" tool: lets the model read one file from the
+// repo, sandboxed to the worktree root.
 type ReadFile struct {
 	root string // absolute; the worktree root
 }
 
+// NewReadFile builds a ReadFile tool rooted at the given directory.
+// Converts root to an absolute path up front so later prefix checks
+// in resolve() can't be fooled by a relative root.
 func NewReadFile(root string) (*ReadFile, error) {
 	abs, err := filepath.Abs(root)
 	if err != nil {
@@ -25,6 +30,8 @@ func NewReadFile(root string) (*ReadFile, error) {
 	return &ReadFile{root: abs}, nil
 }
 
+// Def describes this tool to the model: its name, what it does, and the
+// JSON schema for its input (a single "path" string).
 func (t *ReadFile) Def() agent.ToolDef {
 	return agent.ToolDef{
 		Name:        "read_file",
@@ -39,10 +46,13 @@ func (t *ReadFile) Def() agent.ToolDef {
 	}
 }
 
+// readFileInput matches the JSON schema declared in Def().
 type readFileInput struct {
 	Path string `json:"path"`
 }
 
+// Run is the actual tool call: parse input, resolve+validate the path,
+// read the file, truncate if it's too big, and return numbered lines.
 func (t *ReadFile) Run(ctx context.Context, input json.RawMessage) (string, error) {
 	var in readFileInput
 	if err := json.Unmarshal(input, &in); err != nil {
@@ -80,6 +90,8 @@ func (t *ReadFile) resolve(p string) (string, error) {
 	return joined, nil
 }
 
+// numberLines prefixes each line with "N\t" (like `cat -n`) so the model
+// can reference specific line numbers back to us.
 func numberLines(s string) string {
 	lines := strings.Split(s, "\n")
 	var b strings.Builder
