@@ -9,11 +9,15 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/Leon0926/Agentic-CI/internal/agent"
 	"github.com/Leon0926/Agentic-CI/internal/detectors"
 	"github.com/Leon0926/Agentic-CI/internal/detectors/secrets"
 	"github.com/Leon0926/Agentic-CI/internal/diff"
 	"github.com/Leon0926/Agentic-CI/internal/findings"
+	"github.com/Leon0926/Agentic-CI/internal/sandbox"
+	"github.com/Leon0926/Agentic-CI/internal/tools"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var errNoDiffSource = errors.New("no diff provided: pass --diff <range> or pipe a diff on stdin")
@@ -33,21 +37,51 @@ Diff sources, in priority order:
 			return err
 		}
 
-		// parse raw into hunks -> internal/diff -> DONE!!!
 		files, err := diff.Parse(strings.NewReader(raw))
 		if err != nil {
 			return fmt.Errorf("parsing diff: %w", err)
 		}
 
-		// run secrets detector loop  -> internal/detectors/secrets -> DONE!!!
+		ctx := cmd.Context()
 
-		dets := []detectors.Detector{
-			secrets.New(),
+		// --- assembly: build the full detector list first ---
+
+		dets := []detectors.Detector{secrets.New()}
+
+		if viper.GetBool("detectors.secrets_llm.enabled") {
+			repoPath, _ := cmd.Flags().GetString("repo")
+			ref, _ := cmd.Flags().GetString("ref")
+
+			wt, err := sandbox.New(ctx, repoPath, ref)
+			if err != nil {
+				return fmt.Errorf("sandbox: %w", err)
+			}
+			defer wt.Close()
+
+			rf, err := tools.NewReadFile(wt.Root)
+			if err != nil {
+				return err
+			}
+			gr, err := tools.NewGrepRepo(wt.Root)
+			if err != nil {
+				return err
+			}
+
+			dets = append(dets, secrets.NewLLMDetector(
+				agent.NewAnthropicClient(),
+				[]agent.LoopTool{rf, gr},
+				agent.LoopConfig{
+					System:    secrets.V1,
+					Model:     viper.GetString("model"),
+					MaxTokens: viper.GetInt("max_tokens"),
+					MaxIters:  viper.GetInt("max_iterations"),
+				},
+			))
 		}
 
-		report := findings.Report{Findings: []findings.Finding{}}
-		ctx := cmd.Context() // cobra threads a context through; use it now so step 4 is free
+		// --- execution: run every detector, merge findings ---
 
+		report := findings.Report{Findings: []findings.Finding{}}
 		for _, det := range dets {
 			found, err := det.Detect(ctx, files)
 			if err != nil {
@@ -55,11 +89,6 @@ Diff sources, in priority order:
 			}
 			report.Findings = append(report.Findings, found...)
 		}
-
-		// create disposable worktree -> internal/sandbox
-		// do this later
-		// run other detectors         -> internal/detectors/...
-		// collect findings            -> internal/findings
 
 		enc := json.NewEncoder(os.Stdout)
 		enc.SetIndent("", "  ")
@@ -69,6 +98,8 @@ Diff sources, in priority order:
 
 func init() {
 	runCmd.Flags().String("diff", "", "git diff range to review (e.g. origin/main...HEAD)")
+	runCmd.Flags().String("repo", ".", "path to the git repository")
+	runCmd.Flags().String("ref", "HEAD", "git ref to create the review worktree from")
 	rootCmd.AddCommand(runCmd)
 }
 
