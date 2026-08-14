@@ -25,20 +25,7 @@ func (f *fakeClient) Complete(_ context.Context, req Request) (*Response, error)
 	return r, nil
 }
 
-// fakeTool records calls and returns a canned string (or error).
-
-// Table-driven cases:
-//   "happy path"      — queue: [tool_use(read_file), StopEnd("done")]
-//                       → returns "done"; fakeTool called once;
-//                       seen[1] contains an IsError=false ToolResult
-//   "max iterations"  — queue: tool_use × N+1, MaxIters: N
-//                       → errors.Is(err, ErrMaxIterations)
-//   "unknown tool"    — queue: [tool_use("nope"), StopEnd("ok")]
-//                       → no error; seen[1] has IsError result
-//                       containing "no such tool"
-//   "tool errors"     — fakeTool returns error
-//                       → loop continues; IsError result fed back
-//   "client failure"  — fake returns error → RunLoop aborts with it
+// fakeTool records calls and returns a canned string (or error)
 
 type fakeTool struct {
 	name   string
@@ -53,8 +40,6 @@ func (f *fakeTool) Run(_ context.Context, _ json.RawMessage) (string, error) {
 	f.called++
 	return f.out, f.err
 }
-
-// --- helpers ---
 
 func toolUseResp(name string) *Response {
 	return &Response{
@@ -74,8 +59,6 @@ func repeat(r *Response, n int) []*Response {
 	}
 	return out
 }
-
-// --- the tests ---
 
 func TestRunLoop(t *testing.T) {
 	cfg := LoopConfig{MaxIters: 3}
@@ -126,7 +109,7 @@ func TestRunLoop(t *testing.T) {
 	})
 
 	t.Run("unknown tool", func(t *testing.T) {
-		// no tools registered at all — every call is unknown
+		// no tools registered at all = every call is unknown
 		client := &fakeClient{queue: []*Response{
 			toolUseResp("nope"),
 			endResp("ok"),
@@ -166,7 +149,7 @@ func TestRunLoop(t *testing.T) {
 	})
 
 	t.Run("client failure aborts", func(t *testing.T) {
-		client := &fakeClient{} // empty queue → Complete errors immediately
+		client := &fakeClient{} // empty queue = Complete errors immediately
 		_, err := RunLoop(context.Background(), client, cfg, "go", nil)
 		if err == nil {
 			t.Fatal("expected error from client failure")

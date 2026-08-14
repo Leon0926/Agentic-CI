@@ -94,6 +94,45 @@ Diff sources, in priority order:
 		enc.SetIndent("", "  ")
 		return enc.Encode(report)
 	},
+	// RunE: func(cmd *cobra.Command, args []string) error {
+	// 	raw, err := readDiff(cmd)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// 	// parse raw into hunks -> internal/diff -> DONE!!!
+	// 	files, err := diff.Parse(strings.NewReader(raw))
+	// 	if err != nil {
+	// 		return fmt.Errorf("parsing diff: %w", err)
+	// 	}
+
+	// 	// run secrets detector loop  -> internal/detectors/secrets -> DONE!!!
+
+	// 	dets := []detectors.Detector{
+	// 		secrets.New(),
+	// 	}
+
+	// 	report := findings.Report{Findings: []findings.Finding{}}
+	// 	ctx := cmd.Context() // cobra threads a context through; use it now so step 4 is free
+
+	// 	for _, det := range dets {
+	// 		found, err := det.Detect(ctx, files)
+	// 		if err != nil {
+	// 			return fmt.Errorf("detector %s: %w", det.Name(), err)
+	// 		}
+	// 		report.Findings = append(report.Findings, found...)
+	// 	}
+
+	// 	// create disposable worktree -> internal/sandbox
+
+	// 	// do this later
+	// 	// run other detectors         -> internal/detectors/...
+	// 	// collect findings            -> internal/findings
+
+	// 	enc := json.NewEncoder(os.Stdout)
+	// 	enc.SetIndent("", "  ")
+	// 	return enc.Encode(report)
+	// },
 }
 
 func init() {
