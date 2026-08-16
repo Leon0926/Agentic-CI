@@ -7,8 +7,9 @@ AI code review agent using Go CLI and Github Actions. WIP
 - go-gitdiff parser with own types and golden file tests
 - Detector interface
 - Secrets detector (using regex)
-### Current: 
 - Agent loop; includes tool calling loop, disposable worktree
+### Current: 
+- structuring json output for next steps
 ### Planned additions:
 - eval harness
 - error handling detector
