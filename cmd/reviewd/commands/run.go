@@ -75,6 +75,7 @@ Diff sources, in priority order:
 					Model:     viper.GetString("model"),
 					MaxTokens: viper.GetInt("max_tokens"),
 					MaxIters:  viper.GetInt("max_iterations"),
+					Logger:    Logger,
 				},
 			))
 		}
