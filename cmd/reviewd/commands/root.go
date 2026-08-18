@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"log/slog"
 	"os"
 
@@ -8,8 +9,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Logger is the CLI-wide stderr logger, built in rootCmd's
-// PersistentPreRun once flags are parsed (so --verbose is already known).
+// Logger is the CLI-wide stderr logger, built in initConfig (via
+// cobra.OnInitialize) once flags are parsed, so --verbose is already
+// known and it's available in time to warn about config-load problems.
 // Always os.Stderr: reviewd's diff-in/findings-out contract requires
 // stdout to stay pure JSON, never log output.
 var Logger *slog.Logger
@@ -20,13 +22,6 @@ var rootCmd = &cobra.Command{
 	Long:          "reviewd runs detector llm agents that can read files, grep the repo and later run tests in disposable work tree",
 	SilenceUsage:  true,
 	SilenceErrors: true,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		lvl := slog.LevelInfo
-		if verbose, _ := cmd.Flags().GetBool("verbose"); verbose {
-			lvl = slog.LevelDebug
-		}
-		Logger = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: lvl}))
-	},
 }
 
 func Execute() error {
@@ -49,6 +44,11 @@ func init() {
 }
 
 func initConfig() {
+	lvl := slog.LevelInfo
+	if verbose, _ := rootCmd.PersistentFlags().GetBool("verbose"); verbose {
+		lvl = slog.LevelDebug
+	}
+	Logger = slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: lvl}))
 
 	if cfg, _ := rootCmd.PersistentFlags().GetString("config"); cfg != "" {
 		viper.SetConfigFile(cfg)
@@ -59,6 +59,18 @@ func initConfig() {
 	}
 	viper.SetEnvPrefix("REVIEWD")
 	viper.AutomaticEnv()
-	// Missing config file is fine as flags/env/defaults cover everything
-	_ = viper.ReadInConfig()
+
+	// A missing/broken config file is fine — flags/env/defaults cover
+	// everything — but it's exactly what makes a detector silently
+	// disable itself (see: secrets_llm.enabled reading as false), so
+	// warn loudly instead of swallowing the error.
+	if err := viper.ReadInConfig(); err != nil {
+		var notFound viper.ConfigFileNotFoundError
+		if errors.As(err, &notFound) {
+			wd, _ := os.Getwd()
+			Logger.Warn("no .reviewd.yaml found; using flags/env/defaults only", "cwd", wd)
+		} else {
+			Logger.Warn("config file found but failed to load; using flags/env/defaults only", "error", err)
+		}
+	}
 }
