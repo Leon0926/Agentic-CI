@@ -25,12 +25,17 @@ func NewLLMDetector(client agent.Client, tools []agent.LoopTool, cfg agent.LoopC
 func (d *LLMDetector) Name() string { return "secrets-llm" }
 
 func (d *LLMDetector) Detect(ctx context.Context, files []diff.FileDiff) ([]findings.Finding, error) {
+	added := countAddedLines(files)
+	if added == 0 {
+		return nil, nil // nothing new to review — don't spend a model call on it
+	}
+
 	// Pre-bind detector/scope attrs so every loop.go log line (entry,
 	// iteration, tool call, exit) carries them for free via slog.With.
 	log := d.logger().With(
 		"detector", d.Name(),
 		"files", len(files),
-		"added_lines", countAddedLines(files),
+		"added_lines", added,
 	)
 	cfg := d.cfg
 	cfg.Logger = log
