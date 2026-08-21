@@ -8,8 +8,10 @@ import (
 )
 
 func main() {
-	if err := commands.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, "reviewd", err)
-		os.Exit(1)
+	err := commands.Execute()
+	if err != nil {
+		// rootCmd has SilenceErrors set, so nothing has printed this yet.
+		fmt.Fprintln(os.Stderr, "reviewd:", err)
 	}
+	os.Exit(commands.ExitCode(err))
 }

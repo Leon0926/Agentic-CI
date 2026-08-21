@@ -138,6 +138,32 @@ Diff sources, in priority order:
 			return err
 		}
 
+		// Exit code is decided after the report is fully written, not
+		// instead of writing it — a detector erroring or findings clearing
+		// threshold still leaves a complete report on stdout; only the
+		// process's exit code changes. See exit.go.
+		var errored []string
+		for _, ds := range report.Detectors {
+			if ds.Status == "errored" {
+				errored = append(errored, ds.Name)
+			}
+		}
+		if len(errored) > 0 {
+			return &exitError{code: ExitInfraFailure,
+				err: fmt.Errorf("detector(s) errored: %s (see report for details)", strings.Join(errored, ", "))}
+		}
+
+		above := 0
+		for _, f := range report.Findings {
+			if f.Confidence >= threshold {
+				above++
+			}
+		}
+		if above > 0 {
+			return &exitError{code: ExitFindingsFound,
+				err: fmt.Errorf("%d finding(s) at or above confidence threshold %.2f", above, threshold)}
+		}
+
 		return nil
 	},
 }
