@@ -110,6 +110,33 @@ func TestLLMDetector_Detect(t *testing.T) {
 	assert.False(t, lastMsg.ToolResults[0].IsError)
 }
 
+func TestLLMDetector_Detect_DropsFindingWithInvalidSeverity(t *testing.T) {
+	client := &fakeClient{queue: []*agent.Response{
+		{
+			StopReason: agent.StopEnd,
+			Text: `[` +
+				`{"file":"config.go","line":3,"detector":"secrets-llm","severity":"urgent","confidence":0.9,"explanation":"bad severity, dropped"},` +
+				`{"file":"config.go","line":5,"detector":"secrets-llm","severity":"high","confidence":0.7,"explanation":"valid, kept"}` +
+				`]`,
+		},
+	}}
+
+	det := NewLLMDetector(client, nil, agent.LoopConfig{MaxIters: 5})
+
+	files := []diff.FileDiff{{
+		NewPath: "config.go",
+		Hunks: []diff.Hunk{{Lines: []diff.Line{
+			{Op: diff.OpAdd, NewLine: 3, Content: `line 3`},
+			{Op: diff.OpAdd, NewLine: 5, Content: `line 5`},
+		}}},
+	}}
+
+	got, err := det.Detect(context.Background(), files)
+	require.NoError(t, err)
+	require.Len(t, got, 1, "the finding with an invalid severity should be dropped, not the whole response")
+	assert.Equal(t, 5, got[0].Line)
+}
+
 func TestLLMDetector_Detect_EmptyDiffSkipsCallEntirely(t *testing.T) {
 	client := &fakeClient{} // empty queue: any Complete() call fails the test
 	det := NewLLMDetector(client, nil, agent.LoopConfig{MaxIters: 5})

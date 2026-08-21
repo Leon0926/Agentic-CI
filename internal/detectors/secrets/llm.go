@@ -46,7 +46,7 @@ func (d *LLMDetector) Detect(ctx context.Context, files []diff.FileDiff) ([]find
 		return nil, fmt.Errorf("secrets-llm: %w", err)
 	}
 
-	fs, err := parseFindings(final)
+	fs, err := parseFindings(final, log)
 	if err != nil {
 		return nil, fmt.Errorf("secrets-llm: %w", err)
 	}
@@ -99,20 +99,35 @@ func renderDiff(files []diff.FileDiff) string {
 }
 
 // parseFindings strips ```json fences defensively, unmarshals into
-// []findings.Finding, and validates detector/severity fields.
+// []findings.Finding, and validates severity via findings.ParseSeverity.
+// A malformed JSON array is still a hard error — the model didn't follow
+// the contract at all. A single finding with an invalid severity is not:
+// it's dropped and logged (reject-and-record) rather than failing every
+// other finding in the same response over one bad field.
+//
 // Unparseable output is an error we surface — for now. When the eval
 // harness exists, "switch to an emit_findings tool" becomes a
 // measured experiment instead of a guess.
-func parseFindings(text string) ([]findings.Finding, error) {
+func parseFindings(text string, log *slog.Logger) ([]findings.Finding, error) {
 	cleaned := stripFences(strings.TrimSpace(text))
 	var fs []findings.Finding
 	if err := json.Unmarshal([]byte(cleaned), &fs); err != nil {
 		return nil, fmt.Errorf("secrets-llm: unparseable findings: %w; raw output: %.200s", err, text)
 	}
-	for i := range fs {
-		fs[i].Detector = "secrets-llm" // stamp, don't trust the model
+
+	valid := fs[:0] // filter in place: range copies each element before it's overwritten
+	for _, f := range fs {
+		sev, err := findings.ParseSeverity(string(f.Severity))
+		if err != nil {
+			log.Warn("secrets-llm: dropping finding with invalid severity",
+				"severity", f.Severity, "file", f.File, "line", f.Line)
+			continue
+		}
+		f.Severity = sev
+		f.Detector = "secrets-llm" // stamp, don't trust the model
+		valid = append(valid, f)
 	}
-	return fs, nil
+	return valid, nil
 }
 
 // stripFences removes a leading/trailing ```json (or bare ```) fence in
