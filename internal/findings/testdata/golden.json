@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "meta": {
+    "reviewd_version": "test",
+    "repo_sha": "abc123",
+    "ref": "HEAD",
+    "model": "claude-test",
+    "threshold": 0.5,
+    "generated_at": "2026-01-01T12:00:00Z"
+  },
+  "detectors": [
+    {
+      "name": "secrets",
+      "status": "ran",
+      "duration_ms": 5
+    },
+    {
+      "name": "secrets-llm",
+      "prompt_version": "v1",
+      "status": "ran",
+      "duration_ms": 1300
+    }
+  ],
+  "findings": [
+    {
+      "file": "internal/bar.go",
+      "line": 3,
+      "detector": "secrets-llm",
+      "rule_id": "hardcoded-token",
+      "severity": "medium",
+      "confidence": 0.3,
+      "explanation": "Looks like a token, but low confidence.",
+      "fingerprint": "bc3f4151e50a9adc9fcc5e5d8e3d826e01f1472d3888631f32e2b8cac47c7fb4"
+    },
+    {
+      "file": "internal/foo.go",
+      "line": 12,
+      "detector": "secrets",
+      "rule_id": "aws-access-key-id",
+      "severity": "high",
+      "confidence": 0.9,
+      "explanation": "Possible AWS access key ID committed in the diff.",
+      "fingerprint": "4bdea1c201dd837968efd62e819d020872f6d7385c10f310ddbaba69a78158d5"
+    }
+  ]
+}
