@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -44,15 +43,14 @@ Diff sources, in priority order:
 		}
 
 		ctx := cmd.Context()
+		repoPath, _ := cmd.Flags().GetString("repo")
+		ref, _ := cmd.Flags().GetString("ref")
 
 		// --- assembly: build the full detector list first ---
 
 		dets := []detectors.Detector{secrets.New()}
 
 		if viper.GetBool("detectors.secrets_llm.enabled") {
-			repoPath, _ := cmd.Flags().GetString("repo")
-			ref, _ := cmd.Flags().GetString("ref")
-
 			wt, err := sandbox.New(ctx, repoPath, ref)
 			if err != nil {
 				return fmt.Errorf("sandbox: %w", err)
@@ -85,7 +83,19 @@ Diff sources, in priority order:
 		// erroring is recorded on its DetectorStatus, not fatal to the run —
 		// the other detectors' findings still make it into the report. ---
 
-		report := findings.Report{Findings: []findings.Finding{}}
+		threshold := viper.GetFloat64("confidence-threshold")
+		report := findings.Report{
+			SchemaVersion: 1,
+			Meta: findings.Meta{
+				ReviewdVersion: Version,
+				RepoSHA:        repoSHA(repoPath),
+				Ref:            ref,
+				Model:          viper.GetString("model"),
+				Threshold:      threshold,
+				GeneratedAt:    time.Now().UTC(),
+			},
+			Findings: []findings.Finding{},
+		}
 		for _, det := range dets {
 			start := time.Now()
 			status := findings.DetectorStatus{Name: det.Name()}
@@ -107,9 +117,28 @@ Diff sources, in priority order:
 			report.Detectors = append(report.Detectors, status)
 		}
 
-		enc := json.NewEncoder(os.Stdout)
-		enc.SetIndent("", "  ")
-		return enc.Encode(report)
+		if err := report.Normalize(repoPath); err != nil {
+			return fmt.Errorf("normalizing report: %w", err)
+		}
+
+		// findings are the only thing that ever go to stdout — progress and
+		// warnings above all went through Logger, which is stderr-only. See
+		// root.go's comment on Logger for why that split matters.
+		out := cmd.OutOrStdout()
+		format, _ := cmd.Flags().GetString("format")
+		switch format {
+		case "json":
+			err = findings.WriteJSON(out, &report)
+		case "text":
+			err = findings.WriteText(out, &report, threshold)
+		default:
+			err = fmt.Errorf("unknown --format %q (want \"text\" or \"json\")", format)
+		}
+		if err != nil {
+			return err
+		}
+
+		return nil
 	},
 }
 
@@ -117,7 +146,20 @@ func init() {
 	runCmd.Flags().String("diff", "", "git diff range to review (e.g. origin/main...HEAD)")
 	runCmd.Flags().String("repo", ".", "path to the git repository")
 	runCmd.Flags().String("ref", "HEAD", "git ref to create the review worktree from")
+	runCmd.Flags().String("format", "text", `output format: "text" or "json"`)
 	rootCmd.AddCommand(runCmd)
+}
+
+// repoSHA returns the current commit SHA of the repo at repoPath, or ""
+// if it can't be resolved (e.g. not a git repo, no commits yet). Best
+// effort and deliberately non-fatal — Meta.RepoSHA is informational, not
+// load-bearing for the report itself.
+func repoSHA(repoPath string) string {
+	out, err := exec.Command("git", "-C", repoPath, "rev-parse", "HEAD").Output()
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(out))
 }
 
 func readDiff(cmd *cobra.Command) (string, error) {

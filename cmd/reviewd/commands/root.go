@@ -16,6 +16,13 @@ import (
 // stdout to stay pure JSON, never log output.
 var Logger *slog.Logger
 
+// Version is the reviewd build version, stamped into Report.Meta by
+// run.go. Overridable at build time via
+// -ldflags "-X .../commands.Version=...". Lives here rather than in
+// main.go because run.go (this package) needs it directly, and main
+// can't be imported back into commands.
+var Version = "dev"
+
 var rootCmd = &cobra.Command{
 	Use:           "reviewd",
 	Short:         "reviewd is a AI code review tool for detecting defects and generating reports",
