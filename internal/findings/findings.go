@@ -5,16 +5,6 @@ package findings
 
 import "time"
 
-// Severity of a finding
-type Severity string
-
-const (
-	SeverityCritical Severity = "critical"
-	SeverityHigh     Severity = "high"
-	SeverityMedium   Severity = "medium"
-	SeverityLow      Severity = "low"
-)
-
 // Finding is a single defect reported by a detector.
 type Finding struct {
 	File        string   `json:"file"`
