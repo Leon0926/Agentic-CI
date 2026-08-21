@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/Leon0926/Agentic-CI/internal/agent"
 	"github.com/Leon0926/Agentic-CI/internal/detectors"
@@ -80,60 +81,36 @@ Diff sources, in priority order:
 			))
 		}
 
-		// --- execution: run every detector, merge findings ---
+		// --- execution: run every detector, merge findings. One detector
+		// erroring is recorded on its DetectorStatus, not fatal to the run —
+		// the other detectors' findings still make it into the report. ---
 
 		report := findings.Report{Findings: []findings.Finding{}}
 		for _, det := range dets {
-			found, err := det.Detect(ctx, files)
-			if err != nil {
-				return fmt.Errorf("detector %s: %w", det.Name(), err)
+			start := time.Now()
+			status := findings.DetectorStatus{Name: det.Name()}
+			if v, ok := det.(detectors.Versioned); ok {
+				status.PromptVersion = v.PromptVersion()
 			}
-			report.Findings = append(report.Findings, found...)
+
+			found, err := det.Detect(ctx, files)
+			status.DurationMS = time.Since(start).Milliseconds()
+
+			if err != nil {
+				status.Status = "errored"
+				status.Error = err.Error()
+				Logger.Warn("detector failed", "detector", det.Name(), "error", err)
+			} else {
+				status.Status = "ran"
+				report.Findings = append(report.Findings, found...)
+			}
+			report.Detectors = append(report.Detectors, status)
 		}
 
 		enc := json.NewEncoder(os.Stdout)
 		enc.SetIndent("", "  ")
 		return enc.Encode(report)
 	},
-	// RunE: func(cmd *cobra.Command, args []string) error {
-	// 	raw, err := readDiff(cmd)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-
-	// 	// parse raw into hunks -> internal/diff -> DONE!!!
-	// 	files, err := diff.Parse(strings.NewReader(raw))
-	// 	if err != nil {
-	// 		return fmt.Errorf("parsing diff: %w", err)
-	// 	}
-
-	// 	// run secrets detector loop  -> internal/detectors/secrets -> DONE!!!
-
-	// 	dets := []detectors.Detector{
-	// 		secrets.New(),
-	// 	}
-
-	// 	report := findings.Report{Findings: []findings.Finding{}}
-	// 	ctx := cmd.Context() // cobra threads a context through; use it now so step 4 is free
-
-	// 	for _, det := range dets {
-	// 		found, err := det.Detect(ctx, files)
-	// 		if err != nil {
-	// 			return fmt.Errorf("detector %s: %w", det.Name(), err)
-	// 		}
-	// 		report.Findings = append(report.Findings, found...)
-	// 	}
-
-	// 	// create disposable worktree -> internal/sandbox
-
-	// 	// do this later
-	// 	// run other detectors         -> internal/detectors/...
-	// 	// collect findings            -> internal/findings
-
-	// 	enc := json.NewEncoder(os.Stdout)
-	// 	enc.SetIndent("", "  ")
-	// 	return enc.Encode(report)
-	// },
 }
 
 func init() {
